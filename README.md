@@ -52,3 +52,10 @@ Alternatively, it could be used to perform further testing on the built snap:
         sudo snap install --dangerous ${{ steps.snapcraft.outputs.snap }}
         # do something with the snap
 ```
+
+# Other Snapcraft actions
+
+The Snapcraft community has created other actions that may be useful for Snap Packagers:
+
+* [Snapcraft Publish Action](https://github.com/jhenstridge/snapcraft-publish-action)
+* [Snapcraft Review Action](https://github.com/diddlesnaps/snapcraft-review-action)

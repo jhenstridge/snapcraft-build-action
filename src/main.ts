@@ -10,8 +10,8 @@ async function run(): Promise<void> {
 
     const builder = new SnapcraftBuilder(path)
     await builder.build()
-    const snap = await builder.outputSnap()
-    core.setOutput('snap', snap)
+    const snaps = await builder.outputSnap()
+    core.setOutput('snap', snaps.join(':'))
   } catch (error) {
     core.setFailed(error.message)
   }

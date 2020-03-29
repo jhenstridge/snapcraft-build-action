@@ -980,8 +980,8 @@ function run() {
             core.info(`Building Snapcraft project in "${path}"...`);
             const builder = new build_1.SnapcraftBuilder(path);
             yield builder.build();
-            const snap = yield builder.outputSnap();
-            core.setOutput('snap', snap);
+            const snaps = yield builder.outputSnap();
+            core.setOutput('snap', snaps.join(':'));
         }
         catch (error) {
             core.setFailed(error.message);
@@ -1314,18 +1314,40 @@ const tools = __importStar(__webpack_require__(735));
 const fs = __webpack_require__(747); // eslint-disable-line @typescript-eslint/no-require-imports
 class SnapcraftBuilder {
     constructor(projectRoot) {
+        var _a, _b, _c;
         this.projectRoot = projectRoot;
+        const useLaunchpad = (_a = core.getInput('use_launchpad'), (_a !== null && _a !== void 0 ? _a : 'false'));
+        this.launchpadBuild = useLaunchpad === 'true';
+        const lpAcceptPublic = (_b = core.getInput('launchpad_accept_public_upload'), (_b !== null && _b !== void 0 ? _b : 'false'));
+        this.launchpadAcceptPublicUpload = lpAcceptPublic === 'true';
+        const lpTimeout = (_c = core.getInput('launchpad_timeout'), (_c !== null && _c !== void 0 ? _c : '3600'));
+        this.launchpadTimeout = parseInt(lpTimeout);
     }
     build() {
         return __awaiter(this, void 0, void 0, function* () {
             core.startGroup('Installing Snapcraft plus dependencies');
             yield tools.ensureSnapd();
-            yield tools.ensureLXD();
             yield tools.ensureSnapcraft();
+            if (!this.launchpadBuild) {
+                yield tools.ensureLXD();
+            }
             core.endGroup();
-            yield exec.exec('sudo', ['env', 'SNAPCRAFT_BUILD_ENVIRONMENT=lxd', 'snapcraft'], {
+            const execOpts = {
                 cwd: this.projectRoot
-            });
+            };
+            if (this.launchpadBuild) {
+                if (!this.launchpadAcceptPublicUpload) {
+                    throw new Error('Launchpad builds are publically accessible. You must acknowledge this by setting "launchpad_accept_public_upload" to true.');
+                }
+                yield exec.exec('snapcraft', [
+                    'remote-build',
+                    '--launchpad-accept-public-upload',
+                    `--launchpad-timeout=${this.launchpadTimeout}`
+                ], execOpts);
+            }
+            else {
+                yield exec.exec('sudo', ['env', 'SNAPCRAFT_BUILD_ENVIRONMENT=lxd', 'snapcraft'], execOpts);
+            }
         });
     }
     // This wrapper is for the benefit of the tests, due to the crazy
@@ -1342,10 +1364,7 @@ class SnapcraftBuilder {
             if (snaps.length === 0) {
                 throw new Error('No snap files produced by build');
             }
-            if (snaps.length > 1) {
-                core.warning(`Multiple snaps found in ${this.projectRoot}`);
-            }
-            return path.join(this.projectRoot, snaps[0]);
+            return snaps.map(snap => path.join(this.projectRoot, snap));
         });
     }
 }

@@ -24,8 +24,8 @@ export class SnapcraftBuilder {
       core.getInput('launchpad_accept_public_upload') ?? 'false'
     this.launchpadAcceptPublicUpload = lpAcceptPublic === 'true'
 
-    const lpTimeout = core.getInput('launchpad_timeout') ?? '3600'
-    this.launchpadTimeout = parseInt(lpTimeout)
+    const lpTimeout = parseInt(core.getInput('launchpad_timeout'))
+    this.launchpadTimeout = Number.isNaN(lpTimeout) ? 3600 : lpTimeout
   }
 
   async build(): Promise<void> {

@@ -1314,14 +1314,14 @@ const tools = __importStar(__webpack_require__(735));
 const fs = __webpack_require__(747); // eslint-disable-line @typescript-eslint/no-require-imports
 class SnapcraftBuilder {
     constructor(projectRoot) {
-        var _a, _b, _c;
+        var _a, _b;
         this.projectRoot = projectRoot;
         const useLaunchpad = (_a = core.getInput('use_launchpad'), (_a !== null && _a !== void 0 ? _a : 'false'));
         this.launchpadBuild = useLaunchpad === 'true';
         const lpAcceptPublic = (_b = core.getInput('launchpad_accept_public_upload'), (_b !== null && _b !== void 0 ? _b : 'false'));
         this.launchpadAcceptPublicUpload = lpAcceptPublic === 'true';
-        const lpTimeout = (_c = core.getInput('launchpad_timeout'), (_c !== null && _c !== void 0 ? _c : '3600'));
-        this.launchpadTimeout = parseInt(lpTimeout);
+        const lpTimeout = parseInt(core.getInput('launchpad_timeout'));
+        this.launchpadTimeout = Number.isNaN(lpTimeout) ? 3600 : lpTimeout;
     }
     build() {
         return __awaiter(this, void 0, void 0, function* () {
